@@ -30,12 +30,20 @@ echo.
 set /p "MSG=  Describe los cambios: "
 if "%MSG%"=="" set "MSG=Cambios varios"
 
+rem Si quedo una sincronizacion a medias de otra vez, se limpia antes de seguir
+if exist ".git\rebase-merge" call :limpiar-rebase
+if exist ".git\rebase-apply" call :limpiar-rebase
+
 git add -A
 git diff --cached --quiet || git commit -m "%MSG%" || (pause & exit /b 1)
 rem Trae lo que haya en GitHub (por ejemplo, cambios subidos por Claude) antes de publicar
-git pull --rebase --autostash origin main || (
+git pull --rebase --autostash origin main
+if errorlevel 1 (
+  rem Si hay conflicto, se deshace la sincronizacion para no dejar el repositorio a medias
+  git rebase --abort >nul 2>nul
   echo.
-  echo  [X] No se pudo sincronizar con GitHub. Revisa los mensajes de arriba.
+  echo  [X] No se pudo sincronizar con GitHub ^(tus cambios estan a salvo en tu PC^).
+  echo      Pasale a Claude los mensajes de arriba para resolverlo.
   pause & exit /b 1
 )
 rem "call" expande los %% dos veces: %%%%s llega a npm como %s (la version)
@@ -52,3 +60,19 @@ set "URL=%URL:.git=%"
 start "" "%URL%/actions"
 echo.
 pause
+exit /b 0
+
+:limpiar-rebase
+rem HEAD "suelto" = hay un rebase realmente en curso -> se cancela.
+rem Si no, son restos de uno que termino mal -> se borran.
+set "HEADREF="
+for /f "delims=" %%h in ('git rev-parse --abbrev-ref HEAD 2^>nul') do set "HEADREF=%%h"
+if /i "%HEADREF%"=="HEAD" (
+  echo  Habia una sincronizacion a medias. Cancelandola...
+  git rebase --abort
+) else (
+  echo  Limpiando restos de una sincronizacion anterior...
+  if exist ".git\rebase-merge" rmdir /s /q ".git\rebase-merge"
+  if exist ".git\rebase-apply" rmdir /s /q ".git\rebase-apply"
+)
+exit /b 0

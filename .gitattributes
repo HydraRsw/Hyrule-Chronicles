@@ -1,0 +1,6 @@
+# Finales de linea: en el repositorio LF; los .bat se descargan con CRLF (Windows los necesita)
+* text=auto
+*.bat text eol=crlf
+*.ico binary
+*.png binary
+*.jpg binary
