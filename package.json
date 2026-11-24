@@ -1,6 +1,6 @@
 {
   "name": "hyrule-chronicles",
-  "version": "1.4.0",
+  "version": "1.4.1",
   "description": "Launcher fan-made estilo colección remix para juegos de Zelda (ports nativos, recomps y emuladores)",
   "main": "main.js",
   "private": true,
