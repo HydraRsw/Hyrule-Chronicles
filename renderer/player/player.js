@@ -2,6 +2,35 @@
 // Reproductor del emulador integrado (EmulatorJS) con menú de pausa propio.
 // Las partidas (SRAM) y el guardado rápido se escriben en disco a través del launcher.
 
+// Todo va dentro de una función para no crear variables globales que choquen con EmulatorJS.
+(() => {
+
+// ---------- Diagnóstico: errores visibles en pantalla ----------
+// (También quedan en el registro del launcher; F12 abre la consola.)
+function showError(msg) {
+  let el = document.getElementById('err');
+  if (!el) {
+    el = document.createElement('pre');
+    el.id = 'err';
+    el.style.cssText = 'position:fixed;left:20px;right:20px;bottom:20px;z-index:10002;max-height:40vh;overflow:auto;' +
+      'margin:0;padding:12px 14px;background:rgba(40,4,4,.92);color:#ffd9d2;border:1px solid #e06a5a;border-radius:4px;' +
+      'font:12px Consolas,monospace;white-space:pre-wrap';
+    document.body.appendChild(el);
+  }
+  el.textContent += msg + '\n';
+  console.error('[HC] ' + msg);
+}
+addEventListener('error', e => {
+  if (e.target && e.target !== window) {
+    const url = e.target.src || e.target.href;
+    if (url) showError(`No se pudo cargar: ${url}`);
+    return;
+  }
+  showError(`Error: ${e.message} (${(e.filename || '').split('/').pop()}:${e.lineno})`);
+}, true);
+addEventListener('unhandledrejection', e => showError(`Error: ${e.reason?.stack || e.reason?.message || e.reason}`));
+
+
 const q = new URLSearchParams(location.search);
 const GAME = q.get('id');
 const SK = q.get('sk') || 'main';  // seed del randomizer: partidas separadas por seed
@@ -218,4 +247,14 @@ let repeatAt = 0;
     if (!menuOpen) prev = { a: b(0), b: b(1), start: b(9) };
   }
   requestAnimationFrame(poll);
+})();
+
+// Vigilante: si en 20 s EmulatorJS no ha montado su interfaz, avisar en pantalla
+if (!WARMUP) {
+  setTimeout(() => {
+    if (started || document.querySelector('#game canvas, #game .ejs_parent')) return;
+    showError('El emulador no arrancó después de 20 s. Pulsa F12 para ver la consola, o pásale a Claude el archivo de registro ' +
+      '(Ajustes › Registro del emulador).');
+  }, 20000);
+}
 })();

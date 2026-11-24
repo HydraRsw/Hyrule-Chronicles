@@ -191,6 +191,49 @@ ipcMain.handle('window:fullscreen', () => {
 });
 ipcMain.handle('app:quit', () => app.quit());
 
+// ---------- Registro del emulador integrado ----------
+// Cada partida reescribe logs/emulador.log con la consola del reproductor.
+// F12 abre las herramientas de desarrollo del emulador.
+const emuLogFile = () => userDir('logs', 'emulador.log');
+const LEVELS = ['verbose', 'info', 'warning', 'error'];
+
+function attachEmuLog(player, game, v, rom) {
+  fs.mkdirSync(path.dirname(emuLogFile()), { recursive: true });
+  const out = fs.createWriteStream(emuLogFile(), { flags: 'w' });
+  const line = s => out.write(`[${new Date().toISOString().slice(11, 19)}] ${s}\n`);
+  line(`Hyrule Chronicles ${app.getVersion()} · Electron ${process.versions.electron} · ${game.id} / ${v.core}`);
+  line(`ROM: ${rom}`);
+  line(`Servidor: ${emu.origin} · caché: ${userDir('emulatorjs')}`);
+
+  const wc = player.webContents;
+  wc.on('console-message', (e, lvl, msg, ln, src) => {
+    const level = e.level ?? LEVELS[lvl] ?? lvl;
+    const message = e.message ?? msg;
+    const where = (e.sourceId ?? src ?? '').split('/').pop();
+    line(`${String(level).toUpperCase()} ${message}${where ? `  (${where}:${e.lineNumber ?? ln})` : ''}`);
+  });
+  wc.on('did-fail-load', (_e, code, desc, url) => line(`FALLO DE CARGA ${code} ${desc} ${url}`));
+  wc.on('render-process-gone', (_e, d) => line(`PROCESO CERRADO: ${d.reason} (${d.exitCode})`));
+  wc.on('before-input-event', (e, input) => {
+    if (input.type === 'keyDown' && input.key === 'F12') { wc.toggleDevTools(); e.preventDefault(); }
+  });
+  player.once('closed', () => { line('Ventana cerrada'); out.end(); });
+}
+
+ipcMain.handle('emu:openLog', () => {
+  if (fs.existsSync(emuLogFile())) shell.showItemInFolder(emuLogFile());
+  else shell.openPath(userDir());
+});
+
+// Borra los archivos de EmulatorJS descargados; se vuelven a bajar al jugar
+ipcMain.handle('emu:clearCache', () => {
+  if (running) return { ok: false, error: 'Cierra el juego antes de borrar la caché.' };
+  fs.rmSync(userDir('emulatorjs'), { recursive: true, force: true });
+  cfg.emuCores = {};
+  saveCfg();
+  return { ok: true };
+});
+
 // ---------- Gestor de ports ----------
 
 const busy = new Set();
@@ -323,6 +366,7 @@ function launchEmu(game, v) {
   });
   player.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
   player.webContents.on('will-navigate', (e, url) => { if (!url.startsWith(emu.origin)) e.preventDefault(); });
+  attachEmuLog(player, game, v, rom);
   player.loadURL(`${emu.origin}/player.html?${q}`);
 
   const t0 = Date.now();

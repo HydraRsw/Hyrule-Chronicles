@@ -33,5 +33,7 @@ contextBridge.exposeInMainWorld('api', {
 
   checkUpdate: () => ipcRenderer.invoke('update:check'),
   installUpdate: () => ipcRenderer.invoke('update:install'),
+  openEmuLog: () => ipcRenderer.invoke('emu:openLog'),
+  clearEmuCache: () => ipcRenderer.invoke('emu:clearCache'),
   onUpdateStatus: cb => ipcRenderer.on('update:status', (_e, d) => cb(d))
 });

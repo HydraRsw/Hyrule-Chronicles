@@ -551,6 +551,10 @@ function openSettings(focusAt = 0) {
     </div>
     <div class="block"><h4>Juego</h4>
       ${tog('emuFullscreen', 'Emulador a pantalla completa')}
+      <div class="row"><label>Emulador integrado</label>
+        <button class="focusable" id="emu-log">Registro del emulador</button>
+        <button class="focusable" id="emu-clear">Borrar caché</button></div>
+      <p class="note">Si un juego del emulador se queda en negro: abre el registro o borra la caché (se vuelve a descargar al jugar). F12 dentro del juego abre la consola.</p>
       ${tog('minimizeOnLaunch', 'Minimizar al abrir un port')}
     </div>
     <div class="block"><h4>Launcher</h4>
@@ -571,6 +575,13 @@ function openSettings(focusAt = 0) {
     panel.querySelector('#upd-btn').addEventListener('click', async () => {
       if (APP.update.status === 'ready') return api.installUpdate();
       onUpdateStatus(await api.checkUpdate());
+    });
+    panel.querySelector('#emu-log').addEventListener('click', () => api.openEmuLog());
+    panel.querySelector('#emu-clear').addEventListener('click', async () => {
+      const r = await api.clearEmuCache();
+      if (!r.ok) { sfx('error'); toast(r.error, true); return; }
+      CFG.emuCores = {};
+      sfx('select'); toast('Caché del emulador borrada. Se descargará de nuevo al jugar.');
     });
     panel.querySelector('#open-deps').addEventListener('click', () => { sfx('select'); openDeps(); });
     panel.querySelector('#quit').addEventListener('click', () => api.quit());
