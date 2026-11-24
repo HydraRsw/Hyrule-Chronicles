@@ -25,7 +25,10 @@
   let room = null;           // { code, slot, max, players: [{slot,name}], host }
   let started = false;
   let ls = null;             // Lockstep (online)
-  let mode = null;           // 'local' | 'online'
+  let mode = null;           // 'local' | 'online' | 'solo'
+  // Solo: el juego exige 2 GBA. Controlas a un Link y cambias al otro; en modo espejo
+  // los dos reciben tus botones (para empujar bloques juntos o moverse en grupo).
+  const solo = { active: 0, mirror: false };
   let players = 0;
   let mySlot = 0;
 
@@ -53,6 +56,7 @@
   const myName = () => ($('#name').value.trim().toUpperCase() || 'LINK').slice(0, 12);
   const server = () => $('#server').value.trim() || q.get('server');
 
+  $('#solo').addEventListener('click', startSolo);
   document.querySelectorAll('[data-local]').forEach(b => b.addEventListener('click', () => startLocal(+b.dataset.local)));
   document.querySelectorAll('[data-create]').forEach(b => b.addEventListener('click', () => createRoom(+b.dataset.create)));
   $('#join-go').addEventListener('click', () => joinRoom($('#code').value.trim()));
@@ -232,6 +236,24 @@
     await startGame('local');
   }
 
+  async function startSolo() {
+    if (!(await ensureRom())) return;
+    players = 2; mySlot = 0; solo.active = 0; solo.mirror = false;
+    await startGame('solo');
+  }
+  function soloSwitch() {
+    solo.active = (solo.active + 1) % players;
+    if (M) M._mgs_set_audio_source(solo.active + 1);
+    soloHelp();
+  }
+  function soloMirror() { solo.mirror = !solo.mirror; soloHelp(); }
+  function soloHelp() {
+    const el = $('#solo-help');
+    el.hidden = mode !== 'solo';
+    el.classList.toggle('mirror', solo.mirror);
+    el.textContent = `Controlas al Link ${solo.active + 1}${solo.mirror ? ' · ESPEJO: los dos te siguen' : ''} · Tab / L3: cambiar · C / R3: espejo`;
+  }
+
   async function startGame(m) {
     mode = m;
     status('Cargando el emulador…');
@@ -252,6 +274,7 @@
     $('#lobby').hidden = true;
     $('#game').hidden = false;
     setupScreens();
+    soloHelp();
     startAudio();
     requestAnimationFrame(loop);
   }
@@ -265,9 +288,9 @@
     imgs = [];
     for (let i = 0; i < players; i++) imgs.push(new ImageData(240, 160));
     $('#thumbs').innerHTML = '';
-    if (mode === 'online') {
+    if (mode === 'online' || mode === 'solo') {
       for (let i = 0; i < players; i++) {
-        if (i === mySlot) continue;
+        if (mode === 'online' && i === mySlot) continue;
         const c = document.createElement('canvas'); c.width = 240; c.height = 160; c.className = 'p' + i;
         $('#thumbs').appendChild(c); thumbs.push({ i, ctx: c.getContext('2d') });
       }
@@ -280,12 +303,13 @@
   }
   function fit() {
     const W = innerWidth, H = innerHeight;
-    const k = Math.max(1, Math.floor(Math.min(W / screen.width, (H - (mode === 'online' ? 140 : 0)) / screen.height)));
+    const strip = mode === 'online' || mode === 'solo' ? 140 : 0;
+    const k = Math.max(1, Math.floor(Math.min(W / screen.width, (H - strip) / screen.height)));
     const s = Math.min(W / screen.width, H / screen.height, k);
     screen.style.width = screen.width * s + 'px';
     screen.style.height = screen.height * s + 'px';
     screen.style.left = (W - screen.width * s) / 2 + 'px';
-    screen.style.top = (mode === 'online' ? Math.max(0, (H - 140 - screen.height * s) / 2) : (H - screen.height * s) / 2) + 'px';
+    screen.style.top = (strip ? Math.max(0, (H - strip - screen.height * s) / 2) : (H - screen.height * s) / 2) + 'px';
   }
   addEventListener('resize', fit);
 
@@ -300,6 +324,14 @@
     return imgs[i];
   }
   function render() {
+    if (mode === 'solo') {
+      const img = copyVideo(solo.active); if (img) sctx.putImageData(img, 0, 0);
+      for (const t of thumbs) {
+        const im = copyVideo(t.i); if (im) t.ctx.putImageData(im, 0, 0);
+        t.ctx.canvas.style.opacity = t.i === solo.active ? '1' : '.6';
+      }
+      return;
+    }
     if (mode === 'online') {
       const img = copyVideo(mySlot); if (img) sctx.putImageData(img, 0, 0);
       for (const t of thumbs) { const im = copyVideo(t.i); if (im) t.ctx.putImageData(im, 0, 0); }
@@ -327,6 +359,10 @@
   addEventListener('keydown', e => {
     if (e.key === 'Escape') { e.preventDefault(); togglePause(); return; }
     if (e.key === 'F11') { e.preventDefault(); net?.toggleFullscreen(); return; }
+    if (mode === 'solo' && !$('#game').hidden && !e.repeat) {
+      if (e.code === 'Tab') { e.preventDefault(); soloSwitch(); return; }
+      if (e.code === 'KeyC') { e.preventDefault(); soloMirror(); return; }
+    }
     if (!$('#game').hidden) { keyboard.add(e.code); e.preventDefault(); }
   });
   addEventListener('keyup', e => keyboard.delete(e.code));
@@ -365,7 +401,24 @@
     if (dt > 100) dt = 100;
     acc += dt;
     let ran = 0;
-    if (mode === 'local') {
+    if (mode === 'solo') {
+      // L3 / R3 del mando: cambiar de Link / espejo
+      const gp = pads()[0];
+      const l3 = !!gp?.buttons[10]?.pressed, r3 = !!gp?.buttons[11]?.pressed;
+      if (l3 && !solo.l3) soloSwitch();
+      if (r3 && !solo.r3) soloMirror();
+      solo.l3 = l3; solo.r3 = r3;
+      while (acc >= FRAME_MS && ran < 4) {
+        if (!paused) {
+          const k = keyboardKeys() | padKeys(gp);
+          for (let i = 0; i < players; i++) M._mgs_set_keys(i, solo.mirror || i === solo.active ? k : 0);
+          M._mgs_run_frame();
+          ran++;
+        }
+        acc -= FRAME_MS;
+      }
+      if (paused) acc = 0;
+    } else if (mode === 'local') {
       while (acc >= FRAME_MS && ran < 4) {
         if (!paused) {
           for (let i = 0; i < players; i++) M._mgs_set_keys(i, localKeys(i));
@@ -409,6 +462,7 @@
   function hud() {
     $('#hud-net').textContent = mode === 'online'
       ? `Jugador ${mySlot + 1} · ${fps} fps · retardo ${ls.delay} · sala ${room?.code || ''}`
+      : mode === 'solo' ? `Solo · 2 Links · ${fps} fps`
       : `${players} jugadores en este PC · ${fps} fps`;
   }
   function banner(t) { const b = $('#banner'); b.textContent = t; b.hidden = false; }

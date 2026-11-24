@@ -16,6 +16,7 @@
       <div class="row"><label>Tu nombre</label><input id="name" maxlength="12" placeholder="LINK" class="focusable"></div>
 
       <div id="menu-main" class="menu">
+        <button class="focusable" id="solo">Jugar solo <small>controlas a dos Links</small></button>
         <button class="focusable" data-go="local">Jugar en este PC <small>2 a 4 mandos</small></button>
         <button class="focusable" data-go="create">Crear sala online</button>
         <button class="focusable" data-go="join">Unirse con código</button>
@@ -85,6 +86,7 @@
     <canvas id="screen" width="240" height="160"></canvas>
     <div id="thumbs"></div>
     <div id="hud"><span id="hud-net"></span></div>
+    <div id="solo-help" hidden>Tab / L3: cambiar de Link · C / R3: modo espejo (los dos te siguen)</div>
     <div id="banner" hidden></div>
     <div id="pause" hidden>
       <div class="box">

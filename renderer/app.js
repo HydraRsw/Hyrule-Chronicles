@@ -111,6 +111,8 @@ function select(i, animate = true) {
   const g = cur();
 
   document.querySelectorAll('.item').forEach((el, k) => el.classList.toggle('sel', k === idx));
+  // Desplaza la lista para que el juego elegido quede a la vista (con teclado o mando)
+  document.querySelector('.item.sel')?.scrollIntoView({ block: 'nearest', behavior: animate ? 'smooth' : 'auto' });
 
   const root = document.documentElement.style;
   root.setProperty('--accent', g.theme[0]);

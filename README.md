@@ -41,6 +41,7 @@ El launcher no incluye juegos, ROMs, claves ni archivos de Nintendo.
 
 Usa la ROM de *A Link to the Past & Four Swords* (GBA). El launcher ejecuta las 4 GBA enlazadas por cable dentro de un mismo emulador ([mgba-splitscreen](https://github.com/Spuds0588/mgba-splitscreen), MPL-2.0), así que el enlace nunca sale del PC.
 
+- **Solo:** el original exige 2 GBA, así que controlas a dos Links. *Tab* o *L3* cambia de Link, y *C* o *R3* activa el modo espejo, en el que los dos te siguen (para empujar bloques juntos).
 - **En este PC:** de 2 a 4 jugadores, un mando cada uno; el teclado también cuenta como jugador 1.
 - **Online:** crea una sala, pasa el código de 5 cifras o búscala en *Salas abiertas*. Cuando el anfitrión pulsa *Empezar*, cada PC emula las 4 GBA y por internet solo viajan los botones (lockstep). Cada 2 segundos se compara el estado para detectar desincronizaciones. Todos necesitan la misma ROM.
 - **Servidor:** usa el de Strikers Online, que tiene salas `mp_` de 2 a 4 jugadores. Se puede cambiar en *Avanzado*.
