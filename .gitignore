@@ -22,3 +22,6 @@ dist/
 *.nsp
 *.xci
 *.keys
+
+# Archivos que envía Claude (no son parte del proyecto)
+Claude outputs/

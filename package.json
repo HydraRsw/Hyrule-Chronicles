@@ -27,24 +27,32 @@
     "win": {
       "target": [
         "nsis"
-      ]
+      ],
+      "icon": "build/icon.ico"
     },
     "portable": {
-      "artifactName": "HyruleChronicles-${version}-portable.exe"
+      "artifactName": "HyruleChronicles-Portable-${version}.exe"
     },
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": true,
       "shortcutName": "Hyrule Chronicles",
-      "artifactName": "HyruleChronicles-Setup-${version}.exe"
+      "artifactName": "HyruleChronicles-Setup-${version}.exe",
+      "installerIcon": "build/icon.ico",
+      "uninstallerIcon": "build/icon.ico",
+      "installerHeaderIcon": "build/icon.ico"
     },
     "publish": [
       {
         "provider": "github",
         "releaseType": "release"
       }
-    ]
+    ],
+    "directories": {
+      "buildResources": "build",
+      "output": "dist"
+    }
   },
   "dependencies": {
     "electron-updater": "^6.6.2"
@@ -52,5 +60,9 @@
   "repository": {
     "type": "git",
     "url": "https://github.com/HydraRsw/Hyrule-Chronicles"
+  },
+  "allowScripts": {
+    "electron": true,
+    "electron-winstaller": true
   }
 }

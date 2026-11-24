@@ -32,6 +32,12 @@ if "%MSG%"=="" set "MSG=Cambios varios"
 
 git add -A
 git diff --cached --quiet || git commit -m "%MSG%" || (pause & exit /b 1)
+rem Trae lo que haya en GitHub (por ejemplo, cambios subidos por Claude) antes de publicar
+git pull --rebase --autostash origin main || (
+  echo.
+  echo  [X] No se pudo sincronizar con GitHub. Revisa los mensajes de arriba.
+  pause & exit /b 1
+)
 call npm version %BUMP% -m "v%%s - %MSG%" || (pause & exit /b 1)
 git push --follow-tags || (pause & exit /b 1)
 

@@ -35,6 +35,7 @@ const cfgFile = () => userDir('config.json');
 const coversDir = () => userDir('covers');
 const portsDir = () => userDir('ports');
 const keyOf = (g, v) => `${g}:${v}`;
+const ICON = path.join(__dirname, 'renderer', 'assets', 'icon.png');
 
 function loadCfg() {
   try {
@@ -102,7 +103,7 @@ function createWindow() {
   win = new BrowserWindow({
     width: 1366, height: 768, minWidth: 1024, minHeight: 600,
     fullscreen: cfg.settings.launcherFullscreen,
-    backgroundColor: '#04060c', autoHideMenuBar: true, title: 'Hyrule Chronicles',
+    backgroundColor: '#04060c', autoHideMenuBar: true, icon: ICON, title: 'Hyrule Chronicles',
     webPreferences: { preload: path.join(__dirname, 'preload.js'), contextIsolation: true, nodeIntegration: false, sandbox: true }
   });
   win.loadFile(path.join(__dirname, 'renderer', 'index.html'));
@@ -314,7 +315,7 @@ function launchEmu(game, v) {
   });
   const player = new BrowserWindow({
     width: 1280, height: 720, fullscreen: cfg.settings.emuFullscreen,
-    backgroundColor: '#000', autoHideMenuBar: true, title: game.title,
+    backgroundColor: '#000', autoHideMenuBar: true, icon: ICON, title: game.title,
     webPreferences: {
       preload: path.join(__dirname, 'renderer', 'player', 'player-preload.js'),
       contextIsolation: true, nodeIntegration: false, sandbox: true
@@ -536,7 +537,7 @@ ipcMain.handle('rando:open', (_e, gid) => {
   if (generators.has(gid)) { generators.get(gid).focus(); return { ok: true }; }
 
   const gen = new BrowserWindow({
-    width: 1280, height: 860, parent: win, autoHideMenuBar: true, backgroundColor: '#111',
+    width: 1280, height: 860, parent: win, autoHideMenuBar: true, icon: ICON, backgroundColor: '#111',
     title: `Generador · ${g.title}`,
     webPreferences: { partition: `persist:rando-${gid}`, contextIsolation: true, sandbox: true }
   });
