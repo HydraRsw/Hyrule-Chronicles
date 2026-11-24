@@ -1,0 +1,56 @@
+{
+  "name": "hyrule-chronicles",
+  "version": "1.4.0",
+  "description": "Launcher fan-made estilo colección remix para juegos de Zelda (ports nativos, recomps y emuladores)",
+  "main": "main.js",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "dist": "electron-builder --win portable --x64 --publish never",
+    "dist:installer": "electron-builder --win nsis --x64 --publish never"
+  },
+  "devDependencies": {
+    "electron": "^38.0.0",
+    "electron-builder": "^26.0.0"
+  },
+  "build": {
+    "appId": "com.fan.hyrulechronicles",
+    "productName": "Hyrule Chronicles",
+    "files": [
+      "main.js",
+      "preload.js",
+      "games.js",
+      "ports.js",
+      "emuserver.js",
+      "renderer/**"
+    ],
+    "win": {
+      "target": [
+        "nsis"
+      ]
+    },
+    "portable": {
+      "artifactName": "HyruleChronicles-${version}-portable.exe"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "shortcutName": "Hyrule Chronicles",
+      "artifactName": "HyruleChronicles-Setup-${version}.exe"
+    },
+    "publish": [
+      {
+        "provider": "github",
+        "releaseType": "release"
+      }
+    ]
+  },
+  "dependencies": {
+    "electron-updater": "^6.6.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/HydraRsw/Hyrule-Chronicles"
+  }
+}

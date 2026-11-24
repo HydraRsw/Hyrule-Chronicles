@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Hyrule Chronicles</title>
+  <style>
+    :root { --accent: #e9cf8a; }
+    html, body { margin: 0; height: 100%; background: #000; overflow: hidden; font-family: "Segoe UI", system-ui, sans-serif; }
+    #game { width: 100vw; height: 100vh; }
+
+    #hint {
+      position: fixed; top: 14px; left: 50%; transform: translateX(-50%); z-index: 9999;
+      padding: 8px 18px; border-radius: 20px; background: rgba(0,0,0,.7); color: var(--accent);
+      font-size: 13px; letter-spacing: .08em; border: 1px solid rgba(233,207,138,.35);
+      transition: opacity .8s; pointer-events: none;
+    }
+    #hint.hide { opacity: 0; }
+    #bar { position: fixed; left: 0; bottom: 0; height: 3px; width: 0; background: var(--accent); z-index: 9999; }
+
+    /* Menú de pausa */
+    #menu {
+      position: fixed; inset: 0; z-index: 10000; display: none;
+      background: radial-gradient(ellipse at center, rgba(6,10,22,.82), rgba(0,0,0,.94));
+      backdrop-filter: blur(3px); align-items: center; justify-content: center;
+    }
+    #menu.open { display: flex; animation: fade .2s ease; }
+    @keyframes fade { from { opacity: 0; } }
+    .box { min-width: 380px; text-align: center; }
+    .box h1 {
+      font: 400 34px "Palatino Linotype", Palatino, Georgia, serif; margin: 0 0 4px; letter-spacing: .04em;
+      color: #fff; text-shadow: 0 0 20px color-mix(in srgb, var(--accent) 60%, transparent);
+    }
+    .box .sub { color: var(--accent); letter-spacing: .35em; font-size: 11px; margin-bottom: 28px; text-transform: uppercase; }
+    .box button {
+      display: block; width: 100%; margin: 6px 0; padding: 13px 20px; cursor: pointer;
+      font: 15px "Segoe UI", system-ui, sans-serif; letter-spacing: .1em; color: rgba(238,241,247,.7);
+      background: transparent; border: 1px solid transparent; border-radius: 3px; text-align: center;
+      transition: background .15s, color .15s;
+    }
+    .box button small { display: block; font-size: 11px; letter-spacing: .04em; color: rgba(154,164,184,.8); margin-top: 3px; }
+    .box button.sel, .box button:hover {
+      color: #fff; border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+      background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--accent) 22%, transparent), transparent);
+    }
+    .box button:disabled { opacity: .35; cursor: default; }
+    .keys { margin-top: 24px; font-size: 11px; letter-spacing: .1em; color: rgba(154,164,184,.8); }
+
+    #toast {
+      position: fixed; bottom: 40px; left: 50%; transform: translateX(-50%); z-index: 10001;
+      padding: 10px 20px; border-radius: 3px; background: rgba(10,14,28,.95); color: #eef1f7;
+      border: 1px solid rgba(233,207,138,.4); font-size: 14px; opacity: 0; transition: opacity .3s; pointer-events: none;
+    }
+    #toast.show { opacity: 1; }
+  </style>
+</head>
+<body>
+  <div id="game"></div>
+  <div id="hint">Esc · o mantén SELECT + START para abrir el menú</div>
+  <div id="bar"></div>
+
+  <div id="menu">
+    <div class="box">
+      <h1 id="m-title">Pausa</h1>
+      <div class="sub">Hyrule Chronicles</div>
+      <button data-act="resume">Continuar</button>
+      <button data-act="save">Guardar estado<small id="m-saveinfo">Guardado rápido</small></button>
+      <button data-act="load">Cargar estado<small id="m-loadinfo">—</small></button>
+      <button data-act="restart">Reiniciar juego</button>
+      <button data-act="fullscreen">Pantalla completa</button>
+      <button data-act="exit">Volver al launcher</button>
+      <div class="keys">↑ ↓ elegir · Enter / A aceptar · Esc / B continuar</div>
+    </div>
+  </div>
+
+  <div id="toast"></div>
+  <script src="player.js"></script>
+</body>
+</html>

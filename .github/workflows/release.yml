@@ -1,0 +1,30 @@
+# Al subir una etiqueta vX.Y.Z (publicar.bat lo hace), GitHub compila el
+# instalador de Windows y lo publica como Release. El launcher instalado
+# detecta la nueva versión y se actualiza solo.
+name: Publicar versión
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Instalar dependencias
+        run: npm install
+
+      - name: Compilar y publicar
+        run: npx electron-builder --win nsis --x64 --publish always
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

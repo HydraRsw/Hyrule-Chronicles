@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; img-src 'self' file: data:; style-src 'self' 'unsafe-inline'; script-src 'self'">
+  <title>Hyrule Chronicles</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="bgfallback"></div>
+  <div id="bgart"></div>
+  <canvas id="particles"></canvas>
+  <div id="vignette"></div>
+
+  <!-- Pantalla de título -->
+  <section id="title-screen">
+    <div class="logo">
+      <div class="logo-sub">THE LEGEND OF ZELDA</div>
+      <h1>Hyrule Chronicles</h1>
+      <div class="logo-remix"><span></span>REMIX COLLECTION<span></span></div>
+    </div>
+    <div class="press">Pulsa START · ENTER</div>
+  </section>
+
+  <!-- Menú principal -->
+  <main id="menu" hidden>
+    <header>
+      <div class="brand">HYRULE CHRONICLES <em>Remix Collection</em></div>
+      <div id="clock"></div>
+    </header>
+
+    <nav id="list"></nav>
+
+    <section id="detail">
+      <img id="d-box" alt="" hidden>
+      <div class="d-text">
+      <div class="era" id="d-era"></div>
+      <h2 id="d-title"></h2>
+      <p id="d-desc"></p>
+
+      <div id="variant">
+        <button class="arrow" id="v-prev" aria-label="Versión anterior">◀</button>
+        <div id="v-name"></div>
+        <button class="arrow" id="v-next" aria-label="Versión siguiente">▶</button>
+      </div>
+      <div id="v-dots"></div>
+      <div id="v-status"></div>
+
+      <div class="stats">
+        <span id="d-play"></span>
+        <span id="d-last"></span>
+      </div>
+
+      <div class="actions">
+        <button id="btn-play" class="primary">Jugar</button>
+        <button id="btn-config">Configurar</button>
+      </div>
+      </div>
+    </section>
+
+    <footer id="hints">
+      <span><kbd>A</kbd>Jugar</span>
+      <span><kbd>LB</kbd><kbd>RB</kbd>Versión</span>
+      <span><kbd>X</kbd>Configurar</span>
+      <span><kbd>START</kbd>Ajustes</span>
+      <span><kbd>B</kbd>Título</span>
+    </footer>
+  </main>
+
+  <div id="modal" hidden><div class="panel" id="panel"></div></div>
+
+  <div id="running" hidden>
+    <div class="ring"></div>
+    <div id="running-title"></div>
+    <div id="running-sub"></div>
+  </div>
+
+  <div id="toast"></div>
+
+  <script src="app.js"></script>
+</body>
+</html>
