@@ -1,0 +1,105 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Four Swords · Hyrule Chronicles</title>
+  <link rel="stylesheet" href="fs.css">
+</head>
+<body>
+  <!-- Lobby -->
+  <section id="lobby">
+    <div class="box">
+      <div class="sub">THE LEGEND OF ZELDA</div>
+      <h1>Four Swords</h1>
+      <div class="tag">2 a 4 jugadores · local u online</div>
+
+      <div class="row"><label>Tu nombre</label><input id="name" maxlength="12" placeholder="LINK" class="focusable"></div>
+
+      <div id="menu-main" class="menu">
+        <button class="focusable" data-go="local">Jugar en este PC <small>2 a 4 mandos</small></button>
+        <button class="focusable" data-go="create">Crear sala online</button>
+        <button class="focusable" data-go="join">Unirse con código</button>
+        <button class="focusable" data-go="list">Salas abiertas</button>
+        <button class="focusable" data-go="advanced">Avanzado</button>
+        <button class="focusable" data-go="exit">Volver al launcher</button>
+      </div>
+
+      <div id="menu-local" class="menu" hidden>
+        <p class="note">Cada jugador usa un mando (el teclado también cuenta como jugador 1).</p>
+        <div class="players">
+          <button class="focusable" data-local="2">2 jugadores</button>
+          <button class="focusable" data-local="3">3 jugadores</button>
+          <button class="focusable" data-local="4">4 jugadores</button>
+        </div>
+        <button class="focusable back" data-go="main">Atrás</button>
+      </div>
+
+      <div id="menu-create" class="menu" hidden>
+        <div class="players">
+          <button class="focusable" data-create="2">Sala de 2</button>
+          <button class="focusable" data-create="3">Sala de 3</button>
+          <button class="focusable" data-create="4">Sala de 4</button>
+        </div>
+        <label class="check"><input type="checkbox" id="public" checked> Pública (sale en «Salas abiertas»)</label>
+        <button class="focusable back" data-go="main">Atrás</button>
+      </div>
+
+      <div id="menu-join" class="menu" hidden>
+        <div class="row"><label>Código</label><input id="code" maxlength="6" inputmode="numeric" placeholder="12345" class="focusable"></div>
+        <button class="focusable primary" id="join-go">Unirse</button>
+        <button class="focusable back" data-go="main">Atrás</button>
+      </div>
+
+      <div id="menu-list" class="menu" hidden>
+        <div id="rooms" class="rooms"><p class="note">Buscando salas…</p></div>
+        <button class="focusable" id="list-refresh">Actualizar</button>
+        <button class="focusable back" data-go="main">Atrás</button>
+      </div>
+
+      <div id="menu-advanced" class="menu" hidden>
+        <div class="row"><label>Servidor</label><input id="server" class="focusable" placeholder="ip:puerto"></div>
+        <div class="row"><label>Retardo de entrada</label>
+          <select id="delay" class="focusable">
+            <option value="0">Automático (según el ping)</option>
+            <option value="3">3 frames (LAN)</option><option value="4">4</option><option value="5">5</option>
+            <option value="6">6</option><option value="8">8 (conexión lenta)</option><option value="10">10</option>
+          </select></div>
+        <p class="note">El servidor es el de Strikers Online (salas de 2 a 4 jugadores).</p>
+        <button class="focusable back" data-go="main">Atrás</button>
+      </div>
+
+      <div id="menu-room" class="menu" hidden>
+        <div class="code-big">Sala <b id="room-code">—</b></div>
+        <div id="roster" class="roster"></div>
+        <p class="note" id="room-note"></p>
+        <button class="focusable primary" id="room-start" hidden>Empezar partida</button>
+        <button class="focusable back" id="room-leave">Salir de la sala</button>
+      </div>
+
+      <p id="status" class="status"></p>
+    </div>
+  </section>
+
+  <!-- Partida -->
+  <section id="game" hidden>
+    <canvas id="screen" width="240" height="160"></canvas>
+    <div id="thumbs"></div>
+    <div id="hud"><span id="hud-net"></span></div>
+    <div id="banner" hidden></div>
+    <div id="pause" hidden>
+      <div class="box">
+        <h1>Pausa</h1>
+        <p class="note" id="pause-note"></p>
+        <div class="menu">
+          <button class="focusable" id="pause-resume">Continuar</button>
+          <button class="focusable" id="pause-exit">Salir de la partida</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <script src="lockstep.js"></script>
+  <script src="engine/mgba-splitscreen-web.js"></script>
+  <script src="fs.js"></script>
+</body>
+</html>

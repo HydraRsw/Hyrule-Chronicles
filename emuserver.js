@@ -26,7 +26,7 @@ function inside(root, p) {
   return r === root || r.startsWith(root + path.sep) ? r : null;
 }
 
-function start({ cacheDir, playerDir, getRom, onFile }) {
+function start({ cacheDir, playerDir, fsDir, getRom, onFile }) {
   fs.mkdirSync(cacheDir, { recursive: true });
 
   // Sirve desde la caché; si no está, lo baja del CDN y lo reenvía al
@@ -86,6 +86,11 @@ function start({ cacheDir, playerDir, getRom, onFile }) {
 
       if (p === '/player.html' || p === '/player.js') {   // player-preload.js no se sirve: lo carga Electron
         return send(res, path.join(playerDir, p.slice(1)), req);
+      }
+      if (fsDir && p.startsWith('/fs/')) {             // Four Swords: lobby, netcode y motor
+        const f = inside(fsDir, p.slice(4) || 'index.html');
+        if (!f || !fs.existsSync(f) || fs.statSync(f).isDirectory()) { res.writeHead(404); return res.end(); }
+        return send(res, f, req);
       }
       if (p.startsWith('/data/')) {
         return await serveData(p.slice('/data/'.length), req, res);

@@ -53,7 +53,7 @@ function missing(g, v) {
   const p = CFG.paths[g.id]?.[v.id] || {};
   const m = [];
   if (v.seedRom) { if (!activeSeedOf(g)) m.push('generar una seed'); }
-  else if (v.type === 'emu' && !p.rom) m.push('tu dump');
+  else if ((v.type === 'emu' || v.type === 'fs') && !p.rom) m.push('tu dump');
   if (v.type === 'port' && !installOf(g, v)) m.push('instalar el port');
   if (v.type === 'manual' && !p.exe) m.push('ejecutable');
   if (v.needsRom && !p.rom) m.push('archivo del juego');
@@ -312,6 +312,9 @@ function openGameConfig(focusAt = 0) {
 
     if (v.type === 'emu' && v.seedRom) {
       html += `<p class="note">Juega la seed activa con el emulador integrado. Cada seed guarda sus propias partidas.</p>`;
+    } else if (v.type === 'fs') {
+      html += pathRow('Tu ROM (GBA)', p.rom, `data-v="${v.id}" data-f="rom"`);
+      html += `<p class="note">${esc(v.note || '')} Al jugar se abre el lobby: partida en este PC con 2 a 4 mandos, o crear / unirse a una sala online.</p>`;
     } else if (v.type === 'emu') {
       html += pathRow('Tu dump', p.rom, `data-v="${v.id}" data-f="rom"`);
       html += `<p class="note">Se juega dentro del launcher. La primera vez se descarga el núcleo del emulador; después funciona sin conexión. Las partidas se guardan solas.</p>`;
@@ -326,7 +329,7 @@ function openGameConfig(focusAt = 0) {
       if (v.import) html += dumpBlock(g, v);
     }
 
-    if (v.type !== 'emu') {
+    if (v.type !== 'emu' && v.type !== 'fs') {
       html += `<div class="row"><label>Argumentos extra</label>
         <input type="text" class="focusable" data-args="${v.id}" value="${esc(p.extraArgs || '')}" placeholder="opcional"></div>`;
     }

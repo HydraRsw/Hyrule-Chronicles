@@ -22,6 +22,7 @@ Launcher para Windows al estilo de las colecciones remix. Eliges un juego y una 
 | Majora's Mask | Zelda 64: Recompiled (descarga) · 2 Ship 2 Harkinian (descarga + importación verificada) |
 | The Minish Cap | Emulador GBA · auto-tmc (manual) |
 | The Wind Waker | Wind Waker HD Recomp (descarga) · Dolphin (manual) |
+| Four Swords | mGBA Splitscreen integrado: 2-4 jugadores en este PC o online |
 | Twilight Princess | Dusklight (descarga) · Dolphin (manual) |
 | Skyward Sword | SkyRecomp (descarga) · Dolphin (manual) |
 | ✦ Randomizer OoT + MM | Emulador N64 integrado · emulador externo (con la seed activa) |
@@ -35,6 +36,15 @@ Launcher para Windows al estilo de las colecciones remix. Eliges un juego y una 
 - **Dusklight / SkyRecomp / Zelda 3 Launcher:** cada uno pide el dump en su propia pantalla la primera vez. SkyRecomp necesita los archivos de Skyward Sword HD v1.0.0 ya extraídos.
 
 El launcher no incluye juegos, ROMs, claves ni archivos de Nintendo.
+
+## Four Swords (2 a 4 jugadores, local u online)
+
+Usa la ROM de *A Link to the Past & Four Swords* (GBA). El launcher ejecuta las 4 GBA enlazadas por cable dentro de un mismo emulador ([mgba-splitscreen](https://github.com/Spuds0588/mgba-splitscreen), MPL-2.0), así que el enlace nunca sale del PC.
+
+- **En este PC:** de 2 a 4 jugadores, un mando cada uno; el teclado también cuenta como jugador 1.
+- **Online:** crea una sala, pasa el código de 5 cifras o búscala en *Salas abiertas*. Cuando el anfitrión pulsa *Empezar*, cada PC emula las 4 GBA y por internet solo viajan los botones (lockstep). Cada 2 segundos se compara el estado para detectar desincronizaciones. Todos necesitan la misma ROM.
+- **Servidor:** usa el de Strikers Online, que tiene salas `mp_` de 2 a 4 jugadores. Se puede cambiar en *Avanzado*.
+- **Controles:** flechas, X = A, Z = B, Enter = Start, Retroceso = Select, A/S = L/R. Con mando: A, B, LB/RB, Start, Back. Esc abre el menú.
 
 ## Randomizer (OoTMM)
 

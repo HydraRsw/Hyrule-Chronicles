@@ -133,6 +133,19 @@ module.exports = [
     ]
   },
   {
+    id: 'fs',
+    title: 'Four Swords',
+    era: 'Game Boy Advance · 2002',
+    theme: ['#b0d86a', '#14200a'],
+    desc: 'Cuatro Links, una espada dividida. Coopera (y compite por las rupias) con hasta tres amigos para rescatar a Zelda de Vaati, en este PC o por internet.',
+    variants: [
+      {
+        id: 'fs', name: 'Local y online · 2 a 4 jugadores', type: 'fs', romExt: ['gba'],
+        note: 'Usa la ROM de «A Link to the Past & Four Swords» (GBA). Online, todos necesitan la misma ROM.'
+      }
+    ]
+  },
+  {
     id: 'tmc',
     title: 'The Minish Cap',
     era: 'Game Boy Advance · 2004',

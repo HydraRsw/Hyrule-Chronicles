@@ -117,9 +117,10 @@ app.whenReady().then(async () => {
     emu = await emuserver.start({
       cacheDir: userDir('emulatorjs'),
       playerDir: path.join(__dirname, 'renderer', 'player'),
+      fsDir: path.join(__dirname, 'renderer', 'fourswords'),
       getRom: gameId => {
         const g = GAMES.find(x => x.id === gameId);
-        const v = g?.variants.find(x => x.type === 'emu');
+        const v = g?.variants.find(x => x.type === 'emu' || x.type === 'fs');
         return v ? romFor(gameId, v) : null;
       },
       onFile: rel => emuEvents.emit('file', rel)
@@ -376,6 +377,65 @@ function launchEmu(game, v) {
   return { ok: true };
 }
 
+// ---------- Four Swords: lobby + partida (local u online) ----------
+// Servidor de salas por defecto: el público de Strikers Online (salas "mp_" de 2 a 4 jugadores).
+const FS_DEFAULT_SERVER = '129.80.132.211:7200';
+const dgram = require('dgram');
+
+function launchFs(game, v) {
+  if (!emu?.origin) return { ok: false, error: `El emulador integrado no pudo iniciarse: ${emu?.error || 'desconocido'}` };
+  const rom = romFor(game.id, v);
+  if (!rom || !fs.existsSync(rom)) return { ok: false, error: 'Elige tu ROM de Four Swords en Configurar.' };
+  const q = new URLSearchParams({
+    rom: `/rom/${game.id}/${encodeURIComponent(path.basename(rom))}`,
+    server: cfg.settings.fsServer || FS_DEFAULT_SERVER
+  });
+  const w = new BrowserWindow({
+    width: 1280, height: 800, fullscreen: cfg.settings.emuFullscreen,
+    backgroundColor: '#04060c', autoHideMenuBar: true, icon: ICON, title: game.title,
+    webPreferences: {
+      preload: path.join(__dirname, 'renderer', 'fourswords', 'fs-preload.js'),
+      contextIsolation: true, nodeIntegration: false, sandbox: true, backgroundThrottling: false
+    }
+  });
+  w.webContents.setWindowOpenHandler(() => ({ action: 'deny' }));
+  w.webContents.on('will-navigate', (e, url) => { if (!url.startsWith(emu.origin)) e.preventDefault(); });
+  attachEmuLog(w, game, v, rom);
+
+  // Un socket UDP por ventana: lo que llega del servidor va a la página tal cual
+  const sock = dgram.createSocket('udp4');
+  let target = null;
+  sock.on('message', msg => { if (!w.isDestroyed()) w.webContents.send('fs:msg', msg); });
+  sock.on('error', () => {});
+  sock.bind(0);
+  const fromThis = e => e.sender === w.webContents;
+  const onServer = (e, addr) => {
+    if (!fromThis(e)) return;
+    const m = /^\s*([^:\s]+):(\d{1,5})\s*$/.exec(addr);
+    target = m ? { host: m[1], port: +m[2] } : null;
+  };
+  const onSend = (e, data) => {
+    if (!fromThis(e) || !target) return;
+    const buf = typeof data === 'string' ? Buffer.from(data) : Buffer.from(data);
+    if (buf.length > 1400) return;
+    sock.send(buf, target.port, target.host);
+  };
+  ipcMain.on('fs:server', onServer);
+  ipcMain.on('fs:send', onSend);
+
+  w.loadURL(`${emu.origin}/fs/index.html?${q}`);
+  const t0 = Date.now();
+  running = { gameId: game.id };
+  win.hide();
+  w.once('closed', () => {
+    ipcMain.off('fs:server', onServer);
+    ipcMain.off('fs:send', onSend);
+    try { sock.close(); } catch { /* ya cerrado */ }
+    finishSession(game.id, t0);
+  });
+  return { ok: true };
+}
+
 // ---------- Puente del reproductor: salir, pantalla completa y guardados en disco ----------
 const savesDir = id => userDir('saves', id);
 const validGame = id => typeof id === 'string' && GAMES.some(g => g.id === id);
@@ -437,6 +497,7 @@ ipcMain.handle('game:launch', async (_e, gameId, variantId) => {
   const p = cfg.paths[gameId]?.[variantId] || {};
 
   if (v.type === 'emu') return launchEmu(game, v);
+  if (v.type === 'fs') return launchFs(game, v);
 
   let exe;
   let args = [];
