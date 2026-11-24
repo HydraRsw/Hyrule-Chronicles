@@ -38,7 +38,8 @@ git pull --rebase --autostash origin main || (
   echo  [X] No se pudo sincronizar con GitHub. Revisa los mensajes de arriba.
   pause & exit /b 1
 )
-call npm version %BUMP% -m "v%%s - %MSG%" || (pause & exit /b 1)
+rem "call" expande los %% dos veces: %%%%s llega a npm como %s (la version)
+call npm version %BUMP% -m "v%%%%s - %MSG%" || (pause & exit /b 1)
 git push --follow-tags || (pause & exit /b 1)
 
 for /f "delims=" %%v in ('node -p "require('./package.json').version"') do set "NEW=%%v"

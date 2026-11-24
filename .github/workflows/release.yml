@@ -43,10 +43,32 @@ jobs:
         shell: bash
         run: if [ -f package-lock.json ]; then npm ci; else npm install; fi
 
-      - name: Compilar y publicar (instalador + portable)
-        run: npx electron-builder --win nsis portable --x64 --publish always
+      # Se compila sin publicar y luego se sube todo junto a UNA sola Release.
+      # (Si electron-builder publica el instalador y el portable a la vez, puede
+      # crear dos Releases con la misma etiqueta.)
+      - name: Compilar (instalador + portable)
+        run: npx electron-builder --win nsis portable --x64 --publish never
+
+      - name: Publicar Release
+        shell: bash
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VER=$(node -p "require('./package.json').version")
+          TAG="v$VER"
+          shopt -s nullglob
+          FILES=(dist/*.exe dist/*.exe.blockmap dist/latest.yml)
+          ls -l "${FILES[@]}"
+          if [ ! -f dist/latest.yml ]; then
+            echo "::error::Falta dist/latest.yml: sin él, el launcher no puede actualizarse."
+            exit 1
+          fi
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            gh release upload "$TAG" "${FILES[@]}" --clobber
+          else
+            gh release create "$TAG" "${FILES[@]}" --target "$GITHUB_SHA" \
+              --title "Hyrule Chronicles $VER" --generate-notes
+          fi
 
       - name: Guardar los .exe como artefacto
         uses: actions/upload-artifact@v4
